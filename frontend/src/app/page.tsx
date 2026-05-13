@@ -117,7 +117,7 @@ export default function DashboardPage() {
   const modeLabel = dataMode === "synthetic" ? "Forced synthetic" : dataMode === "live" ? "Live first" : "Auto fallback";
   const filteredEvents = selectedRoute ? events.filter((event) => event.affected_routes.includes(selectedRoute)) : events;
 
-  const handleSelectRoute = useCallback((id: string | null) => {
+  const handleSelectRoute = useCallback((id: string) => {
     setSelectedRoute(id);
   }, []);
 
@@ -175,7 +175,55 @@ export default function DashboardPage() {
       </div>
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <aside className="flex w-[30%] flex-col overflow-hidden border-r border-rr-border bg-rr-base">
+        <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-rr-base">
+          <div className="relative min-h-0 flex-1">
+            <WorldMap
+              routes={routes}
+              events={events}
+              seaCoords={seaCoords}
+              selectedRoute={selectedRoute}
+              onSelectRoute={handleSelectRoute}
+            />
+
+            <div className="pointer-events-none absolute left-4 top-4 z-10 grid w-[360px] grid-cols-3 gap-2">
+              <MetricCard label="Events" value={events.length || "–"} sub="active shocks" tone="amber" />
+              <MetricCard label="Sea paths" value={Object.keys(seaCoords).length || "–"} sub="backend fed" tone="cyan" />
+              <MetricCard label="Mode" value={dataMode.toUpperCase()} sub={liveMode ? "live/hybrid" : "synthetic"} tone={liveMode ? "green" : "muted"} />
+            </div>
+
+            {!selected && !loading ? (
+              <div className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-xl border border-rr-border bg-rr-base/85 px-4 py-3 text-[10px] text-rr-muted backdrop-blur-xl">
+                Select a route to open delay history and impact cascade.
+              </div>
+            ) : null}
+          </div>
+
+          {selected ? (
+            <section className="grid h-[230px] shrink-0 grid-cols-2 overflow-hidden border-t border-rr-border bg-rr-surface/90">
+              <div className="min-w-0 border-r border-rr-border p-4">
+                <DelayChart routeId={selected.id} riskColor={selectedColor} dataMode={dataMode} />
+              </div>
+              <div className="min-w-0 p-4">
+                <ImpactChain routeId={selected.id} scenario={scenario} dataMode={dataMode} />
+              </div>
+            </section>
+          ) : (
+            <section className="grid h-[230px] shrink-0 grid-cols-3 gap-3 overflow-hidden border-t border-rr-border bg-gradient-to-r from-rr-surface to-rr-base p-4">
+              <div className="col-span-2 rounded-2xl border border-rr-border bg-rr-base/70 p-4">
+                <div className="text-[9px] font-black uppercase tracking-[0.18em] text-rr-muted">Route intelligence standby</div>
+                <div className="mt-2 text-[18px] font-black text-white">Select any route to zoom, open delay history, and inspect the impact cascade.</div>
+                <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-rr-text2">The map now uses backend sea-route coordinates, dims unrelated lanes during focus, and keeps weather signals visible even when live APIs return calm conditions.</p>
+              </div>
+              <div className="rounded-2xl border border-rr-cyan/20 bg-rr-cyan/5 p-4">
+                <div className="text-[9px] font-black uppercase tracking-[0.18em] text-rr-cyan">Current mode</div>
+                <div className="mt-2 text-[24px] font-black text-white">{dataMode.toUpperCase()}</div>
+                <p className="mt-2 text-[10px] leading-relaxed text-rr-text2">Use SYNTHETIC for a clean demo. Use LIVE to test APIs. Use AUTO for normal fallback behavior.</p>
+              </div>
+            </section>
+          )}
+        </main>
+
+        <aside className="flex w-[30%] flex-col overflow-hidden border-l border-rr-border bg-rr-base">
           <section className="shrink-0 border-b border-rr-border bg-gradient-to-b from-rr-surface to-rr-base p-4">
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
@@ -273,54 +321,6 @@ export default function DashboardPage() {
             <p className="mt-2 text-center text-[8px] text-rr-muted">Mock fallback is intentional and labelled for public demos.</p>
           </footer>
         </aside>
-
-        <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-rr-base">
-          <div className="relative min-h-0 flex-1">
-            <WorldMap
-              routes={routes}
-              events={events}
-              seaCoords={seaCoords}
-              selectedRoute={selectedRoute}
-              onSelectRoute={handleSelectRoute}
-            />
-
-            <div className="pointer-events-none absolute right-4 top-4 z-10 grid w-[360px] grid-cols-3 gap-2">
-              <MetricCard label="Events" value={events.length || "–"} sub="active shocks" tone="amber" />
-              <MetricCard label="Sea paths" value={Object.keys(seaCoords).length || "–"} sub="backend fed" tone="cyan" />
-              <MetricCard label="Mode" value={dataMode.toUpperCase()} sub={liveMode ? "live/hybrid" : "synthetic"} tone={liveMode ? "green" : "muted"} />
-            </div>
-
-            {!selected && !loading ? (
-              <div className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-xl border border-rr-border bg-rr-base/85 px-4 py-3 text-[10px] text-rr-muted backdrop-blur-xl">
-                Select a route to open delay history and impact cascade.
-              </div>
-            ) : null}
-          </div>
-
-          {selected ? (
-            <section className="grid h-[230px] shrink-0 grid-cols-2 overflow-hidden border-t border-rr-border bg-rr-surface/90">
-              <div className="min-w-0 border-r border-rr-border p-4">
-                <DelayChart routeId={selected.id} riskColor={selectedColor} dataMode={dataMode} />
-              </div>
-              <div className="min-w-0 p-4">
-                <ImpactChain routeId={selected.id} scenario={scenario} dataMode={dataMode} />
-              </div>
-            </section>
-          ) : (
-            <section className="grid h-[230px] shrink-0 grid-cols-3 gap-3 overflow-hidden border-t border-rr-border bg-gradient-to-r from-rr-surface to-rr-base p-4">
-              <div className="col-span-2 rounded-2xl border border-rr-border bg-rr-base/70 p-4">
-                <div className="text-[9px] font-black uppercase tracking-[0.18em] text-rr-muted">Route intelligence standby</div>
-                <div className="mt-2 text-[18px] font-black text-white">Select any route to zoom, open delay history, and inspect the impact cascade.</div>
-                <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-rr-text2">The map now uses backend sea-route coordinates, dims unrelated lanes during focus, and keeps weather signals visible even when live APIs return calm conditions.</p>
-              </div>
-              <div className="rounded-2xl border border-rr-cyan/20 bg-rr-cyan/5 p-4">
-                <div className="text-[9px] font-black uppercase tracking-[0.18em] text-rr-cyan">Current mode</div>
-                <div className="mt-2 text-[24px] font-black text-white">{dataMode.toUpperCase()}</div>
-                <p className="mt-2 text-[10px] leading-relaxed text-rr-text2">Use SYNTHETIC for a clean demo. Use LIVE to test APIs. Use AUTO for normal fallback behavior.</p>
-              </div>
-            </section>
-          )}
-        </main>
       </div>
     </div>
   );

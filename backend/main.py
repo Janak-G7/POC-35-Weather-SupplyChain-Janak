@@ -122,59 +122,19 @@ MOCK_TRADE_ROUTES = [
     },
 ]
 
-MOCK_WEATHER_EVENTS = [
-    {
-        "id": "WE001",
-        "type": "Typhoon",
-        "severity": "SEVERE",
-        "region": "Western Pacific",
-        "affected_routes": ["R001"],
-        "lat": 22.0,
-        "lng": 130.0,
-        "start_date": (datetime.now(timezone.utc) - timedelta(days=2)).isoformat().replace("+00:00", "Z"),
-        "estimated_duration_days": 5,
-        "delay_multiplier": 1.45,
-        "noaa_event_id": "SYNTHETIC_WE001",
-    },
-    {
-        "id": "WE002",
-        "type": "Arctic Oscillation / Polar Vortex",
-        "severity": "MODERATE",
-        "region": "North Atlantic",
-        "affected_routes": ["R002"],
-        "lat": 55.0,
-        "lng": -30.0,
-        "start_date": (datetime.now(timezone.utc) - timedelta(days=4)).isoformat().replace("+00:00", "Z"),
-        "estimated_duration_days": 8,
-        "delay_multiplier": 1.20,
-        "noaa_event_id": "SYNTHETIC_WE002",
-    },
-    {
-        "id": "WE003",
-        "type": "Sandstorm / Dust Event",
-        "severity": "MODERATE",
-        "region": "Arabian Peninsula",
-        "affected_routes": ["R003"],
-        "lat": 25.0,
-        "lng": 47.0,
-        "start_date": (datetime.now(timezone.utc) - timedelta(days=1)).isoformat().replace("+00:00", "Z"),
-        "estimated_duration_days": 3,
-        "delay_multiplier": 1.15,
-        "noaa_event_id": "SYNTHETIC_WE003",
-    },
-    {
-        "id": "WE004",
-        "type": "Drought / Low River Levels",
-        "severity": "LOW",
-        "region": "Rhine-Danube Basin",
-        "affected_routes": ["R002"],
-        "lat": 50.0,
-        "lng": 8.0,
-        "start_date": (datetime.now(timezone.utc) - timedelta(days=10)).isoformat().replace("+00:00", "Z"),
-        "estimated_duration_days": 30,
-        "delay_multiplier": 1.08,
-        "noaa_event_id": "SYNTHETIC_WE004",
-    },
+_WEATHER_EVENT_POOL = [
+    {"type": "Typhoon", "severity": "SEVERE", "region": "Western Pacific", "affected_routes": ["R001"], "lat": 22.0, "lng": 130.0, "duration": 5, "multiplier": 1.45},
+    {"type": "Tropical Cyclone", "severity": "SEVERE", "region": "Western Pacific", "affected_routes": ["R001"], "lat": 18.0, "lng": 125.0, "duration": 6, "multiplier": 1.45},
+    {"type": "Arctic Oscillation", "severity": "MODERATE", "region": "North Atlantic", "affected_routes": ["R002"], "lat": 55.0, "lng": -30.0, "duration": 8, "multiplier": 1.20},
+    {"type": "Polar Vortex Disruption", "severity": "MODERATE", "region": "North Atlantic", "affected_routes": ["R002"], "lat": 52.0, "lng": -25.0, "duration": 7, "multiplier": 1.20},
+    {"type": "Sandstorm", "severity": "MODERATE", "region": "Arabian Peninsula", "affected_routes": ["R003"], "lat": 25.0, "lng": 47.0, "duration": 3, "multiplier": 1.15},
+    {"type": "Dense Fog Advisory", "severity": "LOW", "region": "Strait of Hormuz", "affected_routes": ["R003"], "lat": 26.5, "lng": 56.5, "duration": 2, "multiplier": 1.08},
+    {"type": "Drought / Low River Levels", "severity": "LOW", "region": "Rhine-Danube Basin", "affected_routes": ["R002"], "lat": 50.0, "lng": 8.0, "duration": 30, "multiplier": 1.08},
+    {"type": "Heavy Monsoon Rain", "severity": "MODERATE", "region": "Indian Ocean", "affected_routes": ["R005"], "lat": 10.0, "lng": 70.0, "duration": 5, "multiplier": 1.20},
+    {"type": "Severe Thunderstorm", "severity": "MODERATE", "region": "South Atlantic", "affected_routes": ["R004"], "lat": -15.0, "lng": -25.0, "duration": 4, "multiplier": 1.20},
+    {"type": "Hurricane Warning", "severity": "SEVERE", "region": "Gulf of Mexico", "affected_routes": ["R002"], "lat": 24.0, "lng": -90.0, "duration": 5, "multiplier": 1.45},
+    {"type": "Port Strike / Congestion", "severity": "MODERATE", "region": "Strait of Malacca", "affected_routes": ["R001"], "lat": 2.5, "lng": 101.0, "duration": 6, "multiplier": 1.20},
+    {"type": "Dense Sea Fog", "severity": "LOW", "region": "Yellow Sea", "affected_routes": ["R001"], "lat": 33.0, "lng": 122.0, "duration": 3, "multiplier": 1.08},
 ]
 
 SIDEBAR_CONTENT = {
@@ -196,6 +156,32 @@ SIDEBAR_CONTENT = {
         ),
     },
 }
+
+def synthetic_weather_events(source: str = "SYNTHETIC") -> list[dict]:
+    today = datetime.now(timezone.utc).date()
+    day_seed = int(hashlib.sha256(str(today).encode()).hexdigest()[:8], 16)
+    rng = random.Random(day_seed)
+    pool = list(_WEATHER_EVENT_POOL)
+    rng.shuffle(pool)
+    selected = pool[:4]
+    events = []
+    for i, template in enumerate(selected):
+        days_ago = rng.randint(1, 6)
+        events.append({
+            "id": f"SYN_{i:04d}",
+            "type": template["type"],
+            "severity": template["severity"],
+            "region": template["region"],
+            "affected_routes": template["affected_routes"],
+            "lat": template["lat"] + rng.uniform(-1.5, 1.5),
+            "lng": template["lng"] + rng.uniform(-1.5, 1.5),
+            "start_date": (datetime.now(timezone.utc) - timedelta(days=days_ago)).isoformat().replace("+00:00", "Z"),
+            "estimated_duration_days": template["duration"] + rng.randint(-1, 2),
+            "delay_multiplier": round(template["multiplier"] + rng.uniform(-0.03, 0.03), 3),
+            "noaa_event_id": f"SYNTHETIC_{template['region'].replace(' ', '_').upper()}",
+            "event_source": source,
+        })
+    return events
 
 SEA_ROUTE_PORTS = [
     {"id": "R001", "from": [121.4737, 31.2304], "to": [-122.4194, 37.7749]},
@@ -276,13 +262,6 @@ def has_live_keys() -> bool:
 def normalize_data_mode(data_mode: str) -> str:
     mode = (data_mode or "auto").lower().strip()
     return mode if mode in {"auto", "live", "synthetic"} else "auto"
-
-
-def synthetic_weather_events(source: str = "SYNTHETIC") -> list[dict]:
-    events = copy.deepcopy(MOCK_WEATHER_EVENTS)
-    for event in events:
-        event["event_source"] = source
-    return events
 
 
 def attach_event_source(events: list[dict], source: str) -> list[dict]:
