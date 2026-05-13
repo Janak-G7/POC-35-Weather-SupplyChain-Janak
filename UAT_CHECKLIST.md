@@ -1,7 +1,7 @@
 # Functional UAT Checklist
 ## PoC #35 — Weather-to-Supply Chain Risk Model
 **Tester:** Janak Gopalakrishnan
-**Date:** 2026-05-10
+**Date:** 2026-05-12
 **Build:** PoC #35 · FastAPI backend + Next.js frontend
 **Test Mode:** SYNTHETIC
 
@@ -84,7 +84,7 @@
 | 4.6 | Last updated timestamp | Click Refresh button | Timestamp in header updates to current time | ✅ Pass |
 | 4.7 | Error state shows on backend down | Stop backend, refresh page | Error state appears, no silent crash | ✅ Pass |
 | 4.8 | Background color correct | Check DevTools body background | Exact hex #030712 confirmed | ✅ Pass |
-| 4.9 | Sidebar is 30% width | Resize browser to 1440px | Sidebar occupies exactly 30% | ✅ Pass |
+| 4.9 | Sidebar is 30% width on right | Resize browser to 1440px | Sidebar occupies exactly 30% on right side of screen | ✅ Pass |
 | 4.10 | Active route has cyan glow | Select any route | RouteCard shows cyan border glow | ✅ Pass |
 
 **Module 4 Result: 10/10 Pass ✅**
@@ -106,6 +106,19 @@
 
 ---
 
+## Module 6 — New Features (v2 Changes)
+
+| # | Test Case | Steps | Expected Result | Pass / Fail |
+|---|---|---|---|---|
+| 6.1 | Sidebar on right side | Load dashboard | Sidebar appears on right, map on left | ✅ Pass |
+| 6.2 | Synthetic events rotate daily | Check weather events on different days | Different 4 events shown each day from pool of 12 | ✅ Pass |
+| 6.3 | Synthetic events have position variance | Check weather marker positions | Markers not in exactly same lat/lng every time | ✅ Pass |
+| 6.4 | Synthetic events have multiplier variance | Check delay_multiplier values | Values slightly different each day, not fixed | ✅ Pass |
+
+**Module 6 Result: 4/4 Pass ✅**
+
+---
+
 ## Final Score
 
 | Module | Tests | Passed | Result |
@@ -115,7 +128,8 @@
 | 3 — Intelligence Value | 10 | 10 | ✅ Pass |
 | 4 — Data Integrity | 10 | 10 | ✅ Pass |
 | 5 — DNA Compliance | 6 | 6 | ✅ Pass |
-| **Total** | **45** | **45** | **✅ FULL PASS** |
+| 6 — New Features | 4 | 4 | ✅ Pass |
+| **Total** | **49** | **49** | **✅ FULL PASS** |
 
 ---
 
@@ -123,15 +137,16 @@
 
 | Gate | Requirement | Status |
 |---|---|---|
-| VAR | Conditional PASS — sidebar width fix applied | ✅ Confirmed |
+| VAR | Full PASS — all sections green | ✅ Confirmed |
 | UAT Module 1 | All handshake tests pass | ✅ Confirmed |
 | UAT Module 2 | All filter tests pass | ✅ Confirmed |
 | UAT Module 3 | All intelligence tests pass | ✅ Confirmed |
 | UAT Module 4 | All data integrity tests pass | ✅ Confirmed |
 | UAT Module 5 | All DNA compliance tests pass | ✅ Confirmed |
+| UAT Module 6 | All new feature tests pass | ✅ Confirmed |
 | Code clean | No console.log in production build | ✅ Confirmed |
-| Screenshot | Final dashboard screenshot attached | ☐ Pending |
+| Screenshot | Final dashboard screenshot attached | ✅ Confirmed |
 
 **Tester:** Janak Gopalakrishnan
-**Date completed:** 2026-05-10
-**Submitted to Intelligence Library:** ☐ Pending
+**Date completed:** 2026-05-12
+**Submitted to Intelligence Library:** ✅ Yes
